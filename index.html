@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050203">
+<title>Nurum — Sevgi Kalbi</title>
+<style>
+:root{color-scheme:dark;--bg:#050203;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%;margin:0;background:var(--bg)}
+body{display:flex;align-items:center;justify-content:center;overflow-x:hidden;position:relative;
+ font-family:"Segoe UI","Noto Sans","Noto Sans JP","Noto Sans KR","Noto Sans Thai","Noto Sans Devanagari",system-ui,sans-serif;
+ background:radial-gradient(ellipse at 50% 45%,#2a0509 0%,#0b0305 45%,var(--bg) 100%)}
+#heart{display:flex;flex-direction:column;align-items:center;animation:beat 2.6s ease-in-out 12s infinite;transform-origin:50% 55%}
+.row{display:flex;justify-content:center;white-space:nowrap}
+.seg{display:flex;justify-content:space-between;align-items:baseline;flex:none}
+.w{display:inline-block;font-weight:600;opacity:0;cursor:default;
+ text-shadow:0 0 .5em currentColor,0 0 1.4em rgba(255,40,20,.45);
+ animation:in 1.8s ease forwards;transition:transform .25s ease,text-shadow .25s ease,filter .25s ease}
+.w:hover{transform:scale(1.35);filter:brightness(1.35);z-index:2;position:relative;
+ text-shadow:0 0 .4em #fff,0 0 1.2em currentColor,0 0 2.4em rgba(255,60,30,.8)}
+
+#center-name{
+  position:fixed;
+  left:50%;
+  top:47%;
+  transform:translate(-50%,-50%);
+  z-index:5;
+  pointer-events:none;
+  font-weight:700;
+  letter-spacing:.08em;
+  color:#fff3ed;
+  opacity:0;
+  padding:.18em .65em;
+  border-radius:999px;
+  background:radial-gradient(circle, rgba(18,3,5,.88) 0%, rgba(18,3,5,.55) 68%, transparent 100%);
+  text-shadow:0 0 10px rgba(255,120,80,.95), 0 0 24px rgba(255,45,20,.85), 0 0 42px rgba(255,20,10,.6);
+  animation:centerIn 2.2s ease 2.2s forwards;
+}
+
+@keyframes centerIn{
+  from{opacity:0;transform:translate(-50%,-42%) scale(.92);filter:blur(6px)}
+  to{opacity:1;transform:translate(-50%,-50%) scale(1);filter:blur(0)}
+}
+@keyframes in{from{opacity:0;filter:blur(6px)}to{opacity:.95;filter:blur(0)}}
+@keyframes beat{0%,100%{transform:scale(1)}12%{transform:scale(1.025)}24%{transform:scale(1)}36%{transform:scale(1.015)}48%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){#heart,#center-name{animation:none;opacity:1}.w{animation-duration:.01s;animation-delay:0s!important}}
+</style>
+</head>
+<body>
+<main id="heart" aria-label="Farklı dillerde sevgi ifadelerinden oluşan kalp"></main>
+<div id="center-name" aria-hidden="true">Nurum</div>
+<script>
+(function(){
+var P=["Nurum","Seni seviyorum","I love you","Nurum","Te amo","Je t’aime","Ich liebe dich","Ti amo","Nurum","愛してる","사랑해","Я тебя люблю","Σ’ αγαπώ","Nurum","Aku cinta kamu","Kocham cię","Jag älskar dig","Ik hou van jou","Anh yêu em","Eu te amo","ฉันรักเธอ","मैं तुमसे प्यार करता हूँ","我爱你","Ana uhibbuka","Szeretlek","Rakastan sinua","Jeg elsker deg","Miluji tě","Te iubesc","Mahal kita","Mi amas vin","Nakupenda","Ndiyakuthanda","Σ’ αγαπάω"];
+var host=document.getElementById("heart");
+var centerEl=document.getElementById("center-name");
+var cv=document.createElement("canvas").getContext("2d");
+
+function inside(x,y){var a=x*x+y*y-1;return a*a*a-x*x*y*y*y<=0}
+function intervals(y){
+  var out=[],start=null,step=0.01;
+  for(var x=-1.4;x<=1.4;x+=step){
+    var i=inside(x,y);
+    if(i&&start===null)start=x;
+    if(!i&&start!==null){out.push([start,x]);start=null}
+  }
+  if(start!==null)out.push([start,1.4]);
+  return out;
+}
+function color(t,k){
+  var h=18-t*22+(k%3)*3;
+  return "hsl("+h+","+(95-t*8)+"%,"+(62-t*14)+"%)";
+}
+function build(){
+  host.innerHTML="";
+  var W=Math.min(window.innerWidth*0.94,window.innerHeight*0.98*1.05,820);
+  var scale=W/2.7;
+  var fs=Math.max(8,Math.min(22,W/30));
+  if(centerEl){centerEl.style.fontSize=Math.max(18,Math.min(44,fs*1.85))+"px";}
+  var lh=fs*1.32;
+  var yTop=1.28,yBot=-1.28;
+  var rows=Math.floor((yTop-yBot)*scale/lh);
+  cv.font="600 "+fs+"px sans-serif";
+  var gap=fs*0.7,idx=0,n=0;
+  for(var r=0;r<rows;r++){
+    var y=yTop-(r+0.5)*(yTop-yBot)/rows;
+    var segs=intervals(y);
+    if(!segs.length)continue;
+    var row=document.createElement("div");
+    row.className="row";row.style.height=lh+"px";row.style.lineHeight=lh+"px";row.style.fontSize=fs+"px";
+    var prevEnd=null,t=r/rows;
+    segs.forEach(function(s){
+      var w=(s[1]-s[0])*scale*0.96;
+      if(w<fs*3)return;
+      var words=[],sum=0;
+      while(true){
+        var p=P[(idx++)%P.length];
+        var pw=cv.measureText(p).width;
+        var need=sum+pw+(words.length?gap:0);
+        if(need>w){ if(!words.length){words.push(p);sum=pw} break;}
+        words.push(p);sum=need;
+      }
+      var seg=document.createElement("div");
+      seg.className="seg";seg.style.width=w+"px";
+      if(prevEnd!==null)seg.style.marginLeft=((s[0]-prevEnd)*scale)+"px";
+      if(words.length===1)seg.style.justifyContent="center";
+      words.forEach(function(p,k){
+        var sp=document.createElement("span");
+        sp.className="w";sp.textContent=p;
+        sp.style.color=color(t,n+k);
+        sp.style.animationDelay=(n*50+r*70)+"ms";
+        seg.appendChild(sp);
+      });
+      n+=words.length;
+      row.appendChild(seg);prevEnd=s[1];
+    });
+    host.appendChild(row);
+  }
+}
+build();
+var tm;
+window.addEventListener("resize",function(){clearTimeout(tm);tm=setTimeout(build,200)});
+})();
+</script>
+</body>
+</html>
